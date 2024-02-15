@@ -7,100 +7,60 @@ import websockets
 import time
 from events import *
 import parsers
-from context import Context
+from Models import Context, Message
 from commands import Command
+from client_ import Requestor
 
 asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
-def dict_structure_to_str(dictionary, indent=0):
-    result_str = ''
-    for key, value in dictionary.items():
-        result_str += ' ' * indent + str(key) + ': '
-        if isinstance(value, dict):
-            result_str += '\n' + dict_structure_to_str(value, indent + 4)
-        else:
-            result_str += type(value).__name__ + '\n'
-    return result_str
-
-class Requestor:
-    def __init__(self, base_url, auth):
-        self.base_url = base_url
-        self.auth = auth
-
-    async def post(self, url, data):
-        async with aiohttp.ClientSession(self.base_url, headers = {"Authorization": self.auth}) as session:
-            async with session.post(url, data = data) as response:
-                return await response.json()
-            
-    async def get(self, url):
-        async with aiohttp.ClientSession(self.base_url, headers = {"Authorization": self.auth}) as session:
-            async with session.get(url) as response:
-                return await response.json()
-            
-    async def put(self, url, data):
-        async with aiohttp.ClientSession(self.base_url, headers = {"Authorization": self.auth}) as session:
-            async with session.put(url, data = data) as response:
-                return await response.json()
-
 class Client(Requestor):
     def __init__(self, auth, prefix = ""):
+        super().__init__("https://discord.com/api/v9", auth)
         self.auth = auth
         self.prefix = prefix
         self.gateway_listeners = {
             "MESSAGE_CREATE": [Message, self.process_commands],
-            "MESSAGE_DELETE": []
         }
         self.commands = {}
 
     async def message(self, channel, content, *, tts = False, flags = 0, add_data = {}):
-        async with aiohttp.ClientSession(headers = {"Authorization": self.auth, "Content-Type": "application/json"}) as session:
-            async with session.post(f"https://discord.com/api/v9/channels/{channel}/messages", data = json.dumps({
-                "mobile_network_type": "unknown",
-                "content": content,
-                "nonce": f"{hashlib.md5(int(datetime.datetime.now().timestamp()).to_bytes(64,'big')).hexdigest()[:25]}",
-                "tts": tts,
-                "flags": flags,
-                **add_data
-            })) as response:
-                return json.loads(await response.text())
+        data = await self.post(f"/channels/{channel}/messages", {
+            "mobile_network_type": "unknown",
+            "content": content,
+            "nonce": f"{hashlib.md5(int(datetime.datetime.now().timestamp()).to_bytes(64,'big')).hexdigest()[:25]}",
+            "tts": tts,
+            "flags": flags,
+            **add_data
+        })
+        return data
 
     async def get_messages(self, channel, *, limit = 50, before: int = None):
         if not before:
-            async with aiohttp.ClientSession(headers = {"Content-Type": "application/json", "Authorization": self.auth}) as session:
-                async with session.get(f"https://discord.com/api/v9/channels/{channel}/messages?limit={limit}") as response:
-                    return json.loads(await response.text())
+            return await self.get(f"/channels/{channel}/messages?limit={limit}")
         else:
-            async with aiohttp.ClientSession(headers = {"Content-Type": "application/json", "Authorization": self.auth}) as session:
-                async with session.get(f"https://discord.com/api/v9/channels/{channel}/messages?limit={limit}&before={before}") as response:
-                    return json.loads(await response.text())
+            return await self.get(f"/channels/{channel}/messages?limit={limit}&before={before}")
 
     async def get_profile(self, id):
-        async with aiohttp.ClientSession(headers = {"Content-Type": "application/json", "Authorization": self.auth}) as session:
-            async with session.get(f"https://discord.com/api/v9/users/{id}/profile?with_mutual_guilds=true&with_mutual_friends_count=true") as response:
-                return json.loads(await response.text())
+        return await self.get(f"/users/{id}/profile?with_mutual_guilds=true&with_mutual_friends_count=true")
             
     async def get_channel(self, id):
-        async with aiohttp.ClientSession(headers = {"Content-Type": "application/json", "Authorization": self.auth}) as session:
-            async with session.get(f"https://discord.com/api/v9/channels/{int(id)}") as response:
-                return json.loads(await response.text())
+        return await self.get(f"/channels/{id}")
     
     async def get_guild(self, id):
-        async with aiohttp.ClientSession(headers = {"Content-Type": "application/json", "Authorization": self.auth}) as session:
-            async with session.get(f"https://discord.com/api/v9/guilds/{id}") as response:
-                return json.loads(await response.text())
+        return await self.get(f"/guilds/{id}")
 
     def command(self, name, *args, **kwargs):
         def wrapped(coro):
-            self.commands[name] = Command(coro)
+            self.commands[name] = Command(coro, *args, **kwargs)
             return self.commands[name]
         return wrapped
 
-    async def process_commands(self, message):
+    async def process_commands(self, message: Message):
         for key, callback in self.commands.items():
             if message.content.startswith(f"{self.prefix}{key}"):
-                await callback.original(await Context.create(self, message.data), *parsers.parse_args(message.content.lstrip(f"{self.prefix}{key}"), callback.original))
+                await callback.original(Context(self, message), *parsers.parse_args(message.content.lstrip(f"{self.prefix}{key}"), callback.original))
 
-    def event(self, name):
+    def event(self, name: str):
         def wrapped(coro):
             async def call(*args, **kwargs):
                 await coro(*args, **kwargs)
@@ -127,22 +87,6 @@ class Client(Requestor):
                         "capabilities": 16381,
                         "d": {
                             "token": self.auth,
-                            "properties": {
-                                "os": "Windows",
-                                "browser": "Chrome",
-                                "device": "",
-                                "system_locale": "ru-RU",
-                                "browser_user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-                                "browser_version": "120.0.0.0",
-                                "os_version": "10",
-                                "referrer": "",
-                                "referring_domain": "",
-                                "referrer_current": "",
-                                "referring_domain_current": "",
-                                "release_channel": "stable",
-                                "client_build_number": 252966,
-                                "client_event_source": None
-                            },
                             "presence": {
                                 "status": "online",
                                 "since": 0,
@@ -176,25 +120,8 @@ class Client(Requestor):
                             done, _ = await asyncio.wait({recv_task}, timeout=1.0)
                             if recv_task in done:
                                 yield json.loads(recv_task.result())
-                        except Exception as E:
+                        except Exception as e:
                             ...
 
-    async def type(self, channel):
-        async with aiohttp.ClientSession(headers = {"Content-Type": "application/json", "Authorization": self.auth}) as session:
-            async with session.post(f"https://discord.com/api/v9/channels/{channel}/typing"):
-                return
-
-    async def get_ch_msgs(self, channel, limit = 1000):
-        msgs = []
-        n = None
-
-        for j in range(limit//50):
-            messages = await self.get_messages(channel, before = n)
-            try:
-                print(j*50, messages[0])
-            except:
-                break
-            msgs.extend(messages)
-            n = msgs[-1]["id"]
-            await asyncio.sleep(2)
-        return msgs
+    async def type(self, channel: int):
+        await self.post(f"/channels/{channel}/typing", {})

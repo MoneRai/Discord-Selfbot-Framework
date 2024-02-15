@@ -1,14 +1,20 @@
-from dataclasses import dataclass
+from __init__ import User
 
-@dataclass
-class Member:
-    roles: list
-    premium_since: str
-    pending: bool
-    nick: str
-    mute: bool
-    joined_at: str
-    flags: str
-    deaf: bool
-    communication_disabled_until: str
-    avatar: str
+class Member(User):
+    __slots__ = (
+        "id",
+        "username",
+        "global_name",
+        "avatar",
+        "avatar_decoration_data",
+        "discriminator",
+        "public_flags",
+        "flags",
+        "banner",
+        "banner_color",
+        "accent_color",
+        "bio"
+    )
+
+    def __init__(self, **data):
+        super().__init__(**data)

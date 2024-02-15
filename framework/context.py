@@ -1,5 +1,4 @@
 import urllib.parse
-from aioproperty import aioproperty
 from typing import List
 import re
 import json
