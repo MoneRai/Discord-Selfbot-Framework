@@ -1,4 +1,5 @@
 import aiohttp
+import json
 
 class Requestor:
     def __init__(self, base_url, auth):
@@ -6,16 +7,26 @@ class Requestor:
         self.auth = auth
 
     async def post(self, url, data):
-        async with aiohttp.ClientSession(self.base_url, headers = {"Authorization": self.auth, "Content-Type": "application/json"}) as session:
-            async with session.post(url, data = data) as response:
-                return await response.json()
+        async with aiohttp.ClientSession(headers = {"Authorization": self.auth, "Content-Type": "application/json"}) as session:
+            async with session.post(self.base_url + url, data = json.dumps(data)) as response:
+                if response.content_type == "application/json":
+                    return await response.json()
+                else:
+                    return await response.text()
             
     async def get(self, url):
-        async with aiohttp.ClientSession(self.base_url, headers = {"Authorization": self.auth, "Content-Type": "application/json"}) as session:
-            async with session.get(url) as response:
-                return await response.json()
+        async with aiohttp.ClientSession(headers = {"Authorization": self.auth, "Content-Type": "application/json"}) as session:
+            async with session.get(self.base_url + url) as response:
+                if response.content_type == "application/json":
+                    return await response.json()
+                else:
+                    return await response.text()
+
             
     async def put(self, url, data):
-        async with aiohttp.ClientSession(self.base_url, headers = {"Authorization": self.auth, "Content-Type": "application/json"}) as session:
-            async with session.put(url, data = data) as response:
-                return await response.json()
+        async with aiohttp.ClientSession(headers = {"Authorization": self.auth, "Content-Type": "application/json"}) as session:
+            async with session.put(self.base_url + url, data = json.dumps(data)) as response:
+                if response.content_type == "application/json":
+                    return await response.json()
+                else:
+                    return await response.text()

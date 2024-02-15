@@ -1,4 +1,4 @@
-from __init__ import Guild
+from .guild import Guild
 
 class Channel:
     __slots__ = (
@@ -15,12 +15,12 @@ class Channel:
     
     def __init__(self, client, **data):
         self.client = client
-        self.id: int = int(data.get("id"))
-        self.guild_id: int = int(data.get("guild_id"))
-        self.type: int = int(data.get("type"))
+        self.id: int = int(data.get("id", 0))
+        self.guild_id: int = int(data.get("guild_id", 0))
+        self.type: int = int(data.get("type", 0))
         self.name: str = data.get("name")
-        self.parent_id: int = int(data.get("parent_id"))
-        self.last_message_id: int = int(data.get("last_message_id"))
+        self.parent_id: int = int(data.get("parent_id", 0))
+        self.last_message_id: int = int(data.get("last_message_id", 0))
         self.last_pin_timestamp: str = data.get("last_pin_timestamp")
         self.permission_overwrites: list = data.get("permission_overwrites")
 

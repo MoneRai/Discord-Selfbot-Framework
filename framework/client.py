@@ -70,7 +70,7 @@ class Client(Requestor):
 
     async def proceed_event(self, event):
         if self.gateway_listeners.get(event["t"]):
-            await self.gateway_listeners[event["t"]][1](self.gateway_listeners[event["t"]][0](self, event["d"]))
+            await self.gateway_listeners[event["t"]][1](self.gateway_listeners[event["t"]][0](self, **event["d"]))
 
     async def run(self):
         async for event in self.run_gateway():
@@ -87,6 +87,22 @@ class Client(Requestor):
                         "capabilities": 16381,
                         "d": {
                             "token": self.auth,
+                            "properties": {
+                                "os": "Windows",
+                                "browser": "Chrome",
+                                "device": "",
+                                "system_locale": "ru-RU",
+                                "browser_user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:122.0) Gecko/20100101 Firefox/122.0",
+                                "browser_version": "120.0.0.0",
+                                "os_version": "10",
+                                "referrer": "",
+                                "referring_domain": "",
+                                "referrer_current": "",
+                                "referring_domain_current": "",
+                                "release_channel": "stable",
+                                "client_build_number": 252966,
+                                "client_event_source": None
+                            },
                             "presence": {
                                 "status": "online",
                                 "since": 0,

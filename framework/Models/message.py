@@ -1,19 +1,25 @@
 import datetime
-from __init__ import Member, Author, Guild, Channel
+from .member import Member
+from .author import Author
+from .guild import Guild
+from .channel import Channel
 
 class Message:
     def __init__(self, client, **data):
         self.client = client
-        self.payload = MessagePayload(self, data)
+        self.payload = MessagePayload(self, **data)
 
     async def add_reaction(self, emoji):
-        await self.client.put(f"/channels/{self.channel_id}/messages/{self.id}/reactions/{emoji}/@me")
+        await self.client.put(f"/channels/{self._channel_id}/messages/{self.id}/reactions/{emoji}/@me")
 
     async def send(self, *args, **kwargs):
-        await Message(self.client.message(self.channel_id, *args, **kwargs))
+        return Message(await self.client.message(self._channel_id, *args, **kwargs))
 
     async def reply(self, *args, **kwargs):
-        await Message(self.client.message(self.channel_id, *args, **kwargs, add_data = {"message_reference": {"channel_id": self.channel_id, "guild_id": self.guild_id, "message_id": self.id}}))
+        return Message(await self.client.message(self._channel_id, *args, **kwargs, add_data = {"message_reference": {"channel_id": self._channel_id, "guild_id": self._guild_id, "message_id": self.id}}))
+
+    async def type(self):
+        return await self.client.type(self._channel_id)
 
     def __getattr__(self, name):
         return getattr(self.payload, name)
@@ -32,10 +38,11 @@ class _MessageReference:
 
 class MessagePayload:
     __slots__ = (
+        "parent",
         "type", 
         "tts", 
         "timestamp", 
-        "_message_reference"
+        "_message_reference",
         "_referenced_message", 
         "pinned",
         "nonce", 
@@ -49,7 +56,7 @@ class MessagePayload:
         "_edited_timestamp", 
         "content",
         "components",
-        "channel_id", 
+        "_channel_id", 
         "_author", 
         "attachments", 
         "_guild_id",
@@ -59,27 +66,30 @@ class MessagePayload:
     def __init__(self, parent, **data):
         self.parent: Message = parent
 
-        self.type: int = int(data.get("type"))
+        self.type: int = int(data.get("type", 0))
         self.tts: bool = data.get("tts")
-        self.timestamp: datetime.datetime = datetime.datetime.fromisoformat(data.get("timestamp"))
+        if data.get("timestamp"):
+            self.timestamp: datetime.datetime = datetime.datetime.fromisoformat(data.get("timestamp"))
         self._message_reference: dict = data.get("message_reference")
         self._referenced_message: dict = data.get("referenced_message")
         self.pinned: bool = data.get("pinned")
-        self.nonce: int = int(data.get("nonce"))
+        self.nonce: int = int(data.get("nonce", 0))
         self.mentions: list = data.get("mentions")
         self.mention_roles: list = data.get("mention_roles")
         self.mention_everyone: bool = data.get("mention_everyone")
-        self.member: Member = Member(data.get("member"))
-        self.id: int = int(data.get("id"))
-        self.flags: int = int(data.get("flags"))
+        if data.get("member"):
+            self.member: Member = Member(self.parent.client, **data.get("member"))
+        self.id: int = int(data.get("id", 0))
+        self.flags: int = int(data.get("flags", 0))
         self.embeds: list = data.get("embeds")
-        self._edited_timestamp: str | None = data.get("edited_timestamp")
+        self._edited_timestamp: str = data.get("edited_timestamp")
         self.content: str = data.get("content")
         self.components: list = data.get("components")
-        self.channel_id: int = int(data.get("channel_id"))
-        self._author = Author(data.get("author"))
+        self._channel_id: int = int(data.get("channel_id", 0))
+        if data.get("author"):
+            self._author = Author(self.parent.client, **data.get("author"))
         self.attachments: list = data.get("attachments")
-        self._guild_id: int = int(data.get("guild_id"))
+        self._guild_id: int = int(data.get("guild_id", 0))
         self.reactions = []
 
     @property

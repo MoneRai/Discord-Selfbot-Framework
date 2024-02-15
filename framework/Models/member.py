@@ -1,4 +1,4 @@
-from __init__ import User
+from .user import User
 
 class Member(User):
     __slots__ = (
@@ -16,5 +16,5 @@ class Member(User):
         "bio"
     )
 
-    def __init__(self, **data):
-        super().__init__(**data)
+    def __init__(self, client, **data):
+        super().__init__(client, **data)

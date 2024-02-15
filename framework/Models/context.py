@@ -1,10 +1,7 @@
 class Context:
     __slots__ = (
-        "author",
         "message",
-        "client",
-        "guild",
-        "channel"
+        "client"
     )
 
     def __init__(self, client, message):
@@ -19,3 +16,12 @@ class Context:
     
     async def author(self):
         return await self.message.author()
+
+    async def reply(self, *args, **kwargs):
+        await self.message.reply(*args, **kwargs)
+
+    async def send(self, *args, **kwargs):
+        await self.message.send(*args, **kwargs)
+
+    async def type(self):
+        return await self.message.type()
