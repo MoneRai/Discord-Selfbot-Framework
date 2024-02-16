@@ -1,6 +1,12 @@
 import re
 
 class Emoji:
+    __slots__ = (
+        "name",
+        "id",
+        "animated"
+    )
+
     def __init__(self, name: str, id: int, animated: bool = False):
         self.name: str = name
         self.id: int = id

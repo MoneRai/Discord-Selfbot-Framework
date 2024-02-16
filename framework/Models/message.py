@@ -114,10 +114,3 @@ class MessagePayload:
     @property
     def edited_timestamp(self):
         return datetime.datetime.fromisoformat(self._edited_timestamp)
-
-    def _add_reaction(self, reaction):
-        self.reactions.append(reaction)
-
-    async def add_reaction(self, emoji):
-        self._add_reaction(emoji)
-        await self.parent.add_reaction(emoji)

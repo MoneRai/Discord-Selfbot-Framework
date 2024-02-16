@@ -47,6 +47,21 @@ class GuildTextChannel(Channel):
         return Guild(**self.client.get_guild(self.guild_id))
 
 class GuildAnnouncementChannel(Channel):
+    __slots__ = (
+        "client",
+        "id",
+        "guild_id",
+        "type",
+        "name",
+        "parent_id",
+        "last_message_id",
+        "permission_overwrites",
+        "topic",
+        "nsfw",
+        "position",
+        "default_auto_archive_duration"
+    )
+
     def __init__(self, client, **data):
         self.client = client
 
@@ -63,6 +78,23 @@ class GuildAnnouncementChannel(Channel):
         self.default_auto_archive_duration: int = int(data.get("default_auto_archive_duration", 0))
 
 class GuildVoiceChannel(Channel):
+    __slots__ = (
+        "client",
+        "id",
+        "guild_id",
+        "type",
+        "name",
+        "parent_id",
+        "permission_overwrites",
+        "nsfw",
+        "position",
+        "bitrate",
+        "user_limit",
+        "rtc_region",
+        "last_message_id",
+        "rate_limit_per_user"
+    )
+
     def __init__(self, client, **data):
         self.client = client
 
@@ -81,6 +113,16 @@ class GuildVoiceChannel(Channel):
         self.rate_limit_per_user: int = int(data.get("rate_limit_per_user", 0))
 
 class DMChannel(Channel):
+    __slots__ = (
+        "client",
+        "id",
+        "last_message_id",
+        "type",
+        "recipients",
+        "owner_id",
+        "icon"
+    )
+
     def __init__(self, client, **data):
         self.client = client
 
@@ -90,6 +132,16 @@ class DMChannel(Channel):
         self.recipients: list = map(User(client, **d) for d in data.get("recipients"))
 
 class GroupDMChannel(Channel):
+    __slots__ = (
+        "client",
+        "id",
+        "last_message_id",
+        "type",
+        "recipients",
+        "owner_id",
+        "icon"
+    )
+
     def __init__(self, client, **data):
         self.client = client
 
@@ -101,6 +153,18 @@ class GroupDMChannel(Channel):
         self.icon: str = data.get("icon")
 
 class ChannelCategory:
+    __slots__ = (
+        "client",
+        "id",
+        "guild_id",
+        "type",
+        "name",
+        "parent_id",
+        "permission_overwrites",
+        "nsfw",
+        "position"
+    )
+
     def __init__(self, client, **data):
         self.client = client
 
@@ -114,6 +178,22 @@ class ChannelCategory:
         self.position: int = int(data.get("position", 0))
 
 class Thread(Channel):
+    __slots__ = (
+        "client",
+        "id",
+        "guild_id",
+        "parent_id",
+        "owner_id",
+        "name",
+        "type",
+        "last_message_id",
+        "message_count",
+        "member_count",
+        "rate_limit_per_user",
+        "thread_metadata",
+        "total_message_sent"
+    )
+    
     def __init__(self, client, **data):
         self.client = client
 

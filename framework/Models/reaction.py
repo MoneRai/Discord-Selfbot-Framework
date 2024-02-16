@@ -1,6 +1,14 @@
 from .emoji import Emoji
 
 class Reaction:
+    __slots__ = (
+        "count",
+        "count_details",
+        "me",
+        "emoji",
+        "burst_colors"
+    )
+
     def __init__(self, **data):
         self.count: int = int(data.get("count", 0))
         self.count_details: dict = data.get("count_details")
