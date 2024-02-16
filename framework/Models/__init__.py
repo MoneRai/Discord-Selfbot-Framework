@@ -8,3 +8,4 @@ from .user import User
 from .ready import Ready
 from .emoji import Emoji
 from .reaction import Reaction
+from .embed import Embed

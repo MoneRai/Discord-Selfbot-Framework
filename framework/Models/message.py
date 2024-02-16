@@ -5,6 +5,8 @@ from .guild import Guild
 from .channel import Channel
 from .emoji import Emoji
 from .reaction import Reaction
+from .embed import Embed
+from .components import MessageComponent
 from urllib.parse import quote_plus
 
 class Message:
@@ -26,6 +28,40 @@ class Message:
 
     async def type(self):
         return await self.client.type(self._channel_id)
+
+    async def click_button(self, button):
+        await self.client.post(f"/interactions", {
+            "application_id": self.author.id,
+            "channel_id": self._channel_id,
+            "data": {
+                "component_type": 2,
+                "custom_id": button.custom_id
+            },
+            "guild_id": self._guild_id,
+            "message_flags": 0,
+            "message_id": self.id,
+            "nonce": self.nonce,
+            "session_id": self.client.session_id,
+            "type": 3
+        })
+
+    async def response_select(self, select, values: list):
+        await self.client.post(f"/interactions", {
+            "application_id": self.author.id,
+            "channel_id": self._channel_id,
+            "data": {
+                "component_type": 3,
+                "custom_id": select.custom_id,
+                "type": 3
+            },
+            "values": values,
+            "guild_id": self._guild_id,
+            "message_flags": 0,
+            "message_id": self.id,
+            "nonce": self.nonce,
+            "session_id": self.client.session_id,
+            "type": 3
+        })
 
     def __getattr__(self, name):
         return getattr(self.payload, name)
@@ -88,16 +124,16 @@ class MessagePayload:
             self.member: Member = Member(self.parent.client, **data.get("member"))
         self.id: int = int(data.get("id", 0))
         self.flags: int = int(data.get("flags", 0))
-        self.embeds: list = data.get("embeds")
+        self.embeds: list = (Embed(**d) for d in data.get("embeds"))
         self._edited_timestamp: str = data.get("edited_timestamp")
         self.content: str = data.get("content")
-        self.components: list = data.get("components")
+        self.components: list = MessageComponent(self, **data.get("components"))
         self._channel_id: int = int(data.get("channel_id", 0))
         if data.get("author"):
             self._author = Author(self.parent.client, **data.get("author"))
         self.attachments: list = data.get("attachments")
         self._guild_id: int = int(data.get("guild_id", 0))
-        self.reactions: list = [Reaction(**d) for d in data.get("reactions", [])]
+        self.reactions: list = (Reaction(**d) for d in data.get("reactions", []))
 
     @property
     def referenced_message(self) -> Message:
