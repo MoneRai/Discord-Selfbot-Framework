@@ -3,11 +3,10 @@ import aiohttp
 import json
 import hashlib
 import datetime
-import websockets
-import time
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from events import *
 import parsers
-from Models import Context, Message
+from Models import Context, Message, Ready
 from commands import Command
 from client_ import Requestor
 
@@ -15,13 +14,20 @@ asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 class Client(Requestor):
     def __init__(self, auth, prefix = ""):
-        super().__init__("https://discord.com/api/v9", auth)
+        super().__init__(f"https://discord.com/api/v9", self.auth)
         self.auth = auth
         self.prefix = prefix
         self.gateway_listeners = {
             "MESSAGE_CREATE": [Message, self.process_commands],
+            "READY": [Ready, self.deploy_ready]
         }
         self.commands = {}
+
+    async def deploy_ready(self, ready: Ready):
+        super().__init__(f"https://discord.com/api/v{ready.version}", self.auth)
+        self.user = ready.user
+        self.guilds = ready.guilds
+        self.session_id = ready.session_id
 
     async def message(self, channel, content, *, tts = False, flags = 0, add_data = {}):
         data = await self.post(f"/channels/{channel}/messages", {
@@ -34,22 +40,25 @@ class Client(Requestor):
         })
         return data
 
-    async def get_messages(self, channel, *, limit = 50, before: int = None):
+    async def get_messages(self, channel, *, limit = 50, before: int = None) -> list:
         if not before:
             return await self.get(f"/channels/{channel}/messages?limit={limit}")
         else:
             return await self.get(f"/channels/{channel}/messages?limit={limit}&before={before}")
 
-    async def get_profile(self, id):
+    async def get_profile(self, id: int) -> dict:
         return await self.get(f"/users/{id}/profile?with_mutual_guilds=true&with_mutual_friends_count=true")
+
+    async def get_user(self, id: int) -> dict:
+        return await self.get(f"/users/{id}")
             
-    async def get_channel(self, id):
+    async def get_channel(self, id: int) -> dict:
         return await self.get(f"/channels/{id}")
     
-    async def get_guild(self, id):
+    async def get_guild(self, id) -> dict:
         return await self.get(f"/guilds/{id}")
 
-    def command(self, name, *args, **kwargs):
+    def command(self, name, *args, **kwargs) -> Command:
         def wrapped(coro):
             self.commands[name] = Command(coro, *args, **kwargs)
             return self.commands[name]
@@ -76,29 +85,18 @@ class Client(Requestor):
         async for event in self.run_gateway():
             await self.proceed_event(event)
 
-    async def run_gateway(self):
+    async def run_gateway(self) -> asyncio.Generator[dict]:
         async with aiohttp.ClientSession(headers = {"Content-Type": "application/json", "Authorization": self.auth}) as session:
             async with session.get(f"https://discord.com/api/v9/gateway") as response:
                 d = json.loads(await response.text())
-                async with websockets.connect(d['url'] + "?v=9&encoding=json") as websocket:
-                    d = json.loads(await websocket.recv())
-                    await websocket.send(json.dumps({
+                async with session.ws_connect(d['url'] + "?v=9&encoding=json") as websocket:
+                    d = json.loads(await websocket.receive())
+                    await websocket.send_json(json.dumps({
                         "op": 2,
                         "capabilities": 16381,
                         "d": {
                             "token": self.auth,
                             "properties": {
-                                "os": "Windows",
-                                "browser": "Chrome",
-                                "device": "",
-                                "system_locale": "ru-RU",
-                                "browser_user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:122.0) Gecko/20100101 Firefox/122.0",
-                                "browser_version": "120.0.0.0",
-                                "os_version": "10",
-                                "referrer": "",
-                                "referring_domain": "",
-                                "referrer_current": "",
-                                "referring_domain_current": "",
                                 "release_channel": "stable",
                                 "client_build_number": 252966,
                                 "client_event_source": None
@@ -122,17 +120,17 @@ class Client(Requestor):
                         }
                     }))
 
-                    t = time.time()
-                    i = 0
+                    scheduler = AsyncIOScheduler()
+
+                    async def heatbeat():
+                        await websocket.send_json(json.dumps({"op": 1}))
+                    
+                    scheduler.add_job(heatbeat, 'interval', seconds = d["d"]["heartbeat_interval"]/1000)
+                    scheduler.start()
 
                     while True:
-                        if (time.time() - t) > d["d"]["heartbeat_interval"]/1000:
-                            await websocket.send(json.dumps({"op": 1, "d": i}))
-                            i += 1
-                            t = time.time()
-
                         try:
-                            recv_task = asyncio.ensure_future(websocket.recv())
+                            recv_task = asyncio.ensure_future(websocket.receive())
                             done, _ = await asyncio.wait({recv_task}, timeout=1.0)
                             if recv_task in done:
                                 yield json.loads(recv_task.result())
