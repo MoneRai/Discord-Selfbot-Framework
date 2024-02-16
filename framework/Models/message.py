@@ -3,14 +3,16 @@ from .member import Member
 from .author import Author
 from .guild import Guild
 from .channel import Channel
+from .emoji import Emoji
+from .reaction import Reaction
 
 class Message:
     def __init__(self, client, **data):
         self.client = client
         self.payload = MessagePayload(self, **data)
 
-    async def add_reaction(self, emoji):
-        await self.client.put(f"/channels/{self._channel_id}/messages/{self.id}/reactions/{emoji}/@me")
+    async def add_reaction(self, emoji: Emoji | str):
+        return await self.client.put(f"/channels/{self._channel_id}/messages/{self.id}/reactions/{str(emoji)}/@me")
 
     async def send(self, *args, **kwargs):
         return Message(await self.client.message(self._channel_id, *args, **kwargs))
@@ -90,7 +92,7 @@ class MessagePayload:
             self._author = Author(self.parent.client, **data.get("author"))
         self.attachments: list = data.get("attachments")
         self._guild_id: int = int(data.get("guild_id", 0))
-        self.reactions = []
+        self.reactions: list = [Reaction(**d) for d in data.get("reactions", [])]
 
     @property
     def referenced_message(self) -> Message:

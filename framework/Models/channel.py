@@ -2,7 +2,16 @@ from .guild import Guild
 from .user import User
 
 class Channel:
-    pass
+    def __new__(cls, client, **data):
+        ident = {
+            0: GuildTextChannel,
+            1: DMChannel,
+            2: GuildVoiceChannel,
+            3: GroupDMChannel,
+            4: ChannelCategory,
+            5: GuildAnnouncementChannel
+        }
+        return ident[data.get("type", 0)](client, **data)
 
 class GuildTextChannel(Channel):
     __slots__ = (
