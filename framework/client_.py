@@ -30,3 +30,11 @@ class Requestor:
                     return await response.json()
                 else:
                     return await response.text()
+                
+    async def patch(self, url, data):
+        async with aiohttp.ClientSession(headers = {"Authorization": self.auth, "Content-Type": "application/json"}) as session:
+            async with session.patch(self.base_url + url, data = json.dumps(data)) as response:
+                if response.content_type == "application/json":
+                    return await response.json()
+                else:
+                    return await response.text()

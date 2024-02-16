@@ -9,12 +9,13 @@ import parsers
 from Models import Context, Message, Ready
 from commands import Command
 from client_ import Requestor
+import traceback
 
 asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 class Client(Requestor):
     def __init__(self, auth, prefix = ""):
-        super().__init__(f"https://discord.com/api/v9", self.auth)
+        super().__init__(f"https://discord.com/api/v9", auth)
         self.auth = auth
         self.prefix = prefix
         self.gateway_listeners = {
@@ -30,7 +31,7 @@ class Client(Requestor):
         self.session_id = ready.session_id
 
     async def message(self, channel, content, *, tts = False, flags = 0, add_data = {}):
-        data = await self.post(f"/channels/{channel}/messages", {
+        return await self.post(f"/channels/{channel}/messages", {
             "mobile_network_type": "unknown",
             "content": content,
             "nonce": f"{hashlib.md5(int(datetime.datetime.now().timestamp()).to_bytes(64,'big')).hexdigest()[:25]}",
@@ -38,7 +39,9 @@ class Client(Requestor):
             "flags": flags,
             **add_data
         })
-        return data
+    
+    async def edit_message(self, channel, id, content):
+        return await self.patch(f"/channels/{channel}/messages/{id}", {"content": content})
 
     async def get_messages(self, channel, *, limit = 50, before: int = None) -> list:
         if not before:
@@ -85,57 +88,34 @@ class Client(Requestor):
         async for event in self.run_gateway():
             await self.proceed_event(event)
 
-    async def run_gateway(self) -> asyncio.Generator[dict]:
+    async def run_gateway(self):
         async with aiohttp.ClientSession(headers = {"Content-Type": "application/json", "Authorization": self.auth}) as session:
             async with session.get(f"https://discord.com/api/v9/gateway") as response:
                 d = json.loads(await response.text())
                 async with session.ws_connect(d['url'] + "?v=9&encoding=json") as websocket:
-                    d = json.loads(await websocket.receive())
-                    await websocket.send_json(json.dumps({
+                    d = await websocket.receive_json()
+                    await websocket.send_json({
                         "op": 2,
-                        "capabilities": 16381,
                         "d": {
                             "token": self.auth,
                             "properties": {
-                                "release_channel": "stable",
-                                "client_build_number": 252966,
-                                "client_event_source": None
+                                "browser_user_agent": "Monerai/1.0",
                             },
-                            "presence": {
-                                "status": "online",
-                                "since": 0,
-                                "activities": [],
-                                "afk": False
-                            },
-                            "compress": False,
-                            "client_state": {
-                                "guild_versions": {},
-                                "highest_last_message_id": "0",
-                                "read_state_version": 0,
-                                "user_guild_settings_version": -1,
-                                "user_settings_version": -1,
-                                "private_channels_version": "0",
-                                "api_code_version": 0
-                            }
+                            "compress": False
                         }
-                    }))
+                    })
 
                     scheduler = AsyncIOScheduler()
+                    i = 0
 
                     async def heatbeat():
-                        await websocket.send_json(json.dumps({"op": 1}))
+                        await websocket.send_json({"op": 1, "d": i})
                     
                     scheduler.add_job(heatbeat, 'interval', seconds = d["d"]["heartbeat_interval"]/1000)
                     scheduler.start()
 
                     while True:
-                        try:
-                            recv_task = asyncio.ensure_future(websocket.receive())
-                            done, _ = await asyncio.wait({recv_task}, timeout=1.0)
-                            if recv_task in done:
-                                yield json.loads(recv_task.result())
-                        except Exception as e:
-                            ...
+                        yield await websocket.receive_json()
 
     async def type(self, channel: int):
         await self.post(f"/channels/{channel}/typing", {})

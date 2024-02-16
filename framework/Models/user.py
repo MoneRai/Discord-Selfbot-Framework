@@ -35,6 +35,6 @@ class UserPayload:
         self.public_flags: int = int(data.get("public_flags", 0))
         self.flags: int = int(data.get("flags", 0))
         self.banner: str = data.get("banner")
-        self.banner_color: int = int(data.get("banner_color", 0))
-        self.accent_color: int = int(data.get("accent_color", 0))
+        self.banner_color: str = data.get("banner_color")
+        self.accent_color: str = data.get("accent_color")
         self.bio: str = data.get("bio")

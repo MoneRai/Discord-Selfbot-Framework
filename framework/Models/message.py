@@ -5,6 +5,7 @@ from .guild import Guild
 from .channel import Channel
 from .emoji import Emoji
 from .reaction import Reaction
+from urllib.parse import quote_plus
 
 class Message:
     def __init__(self, client, **data):
@@ -12,13 +13,16 @@ class Message:
         self.payload = MessagePayload(self, **data)
 
     async def add_reaction(self, emoji: Emoji | str):
-        return await self.client.put(f"/channels/{self._channel_id}/messages/{self.id}/reactions/{str(emoji)}/@me")
+        return await self.client.put(f"/channels/{self._channel_id}/messages/{self.id}/reactions/{quote_plus(str(emoji))}/@me", {})
 
     async def send(self, *args, **kwargs):
-        return Message(await self.client.message(self._channel_id, *args, **kwargs))
+        return Message(self.client, **await self.client.message(self._channel_id, *args, **kwargs))
 
     async def reply(self, *args, **kwargs):
-        return Message(await self.client.message(self._channel_id, *args, **kwargs, add_data = {"message_reference": {"channel_id": self._channel_id, "guild_id": self._guild_id, "message_id": self.id}}))
+        return Message(self.client, **await self.client.message(self._channel_id, *args, **kwargs, add_data = {"message_reference": {"channel_id": self._channel_id, "guild_id": self._guild_id, "message_id": self.id}}))
+    
+    async def edit(self, content, *args, **kwargs):
+        return Message(self.client, **await self.client.edit_message(self._channel_id, self.id, content, *args, **kwargs))
 
     async def type(self):
         return await self.client.type(self._channel_id)
@@ -75,7 +79,8 @@ class MessagePayload:
         self._message_reference: dict = data.get("message_reference")
         self._referenced_message: dict = data.get("referenced_message")
         self.pinned: bool = data.get("pinned")
-        self.nonce: int = int(data.get("nonce", 0))
+        if data.get("nonce"):
+            self.nonce: int = int(data.get("nonce", 0), 16)
         self.mentions: list = data.get("mentions")
         self.mention_roles: list = data.get("mention_roles")
         self.mention_everyone: bool = data.get("mention_everyone")
