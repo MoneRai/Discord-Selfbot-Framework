@@ -30,10 +30,11 @@ class Client(Requestor):
         self.session_id = ready.session_id
 
     async def message(self, channel, content, *, tts = False, flags = 0, add_data = {}):
+        last = Message(**(await self.get_messages(channel, limit = 1))[0])
         return await self.post(f"/channels/{channel}/messages", {
             "mobile_network_type": "unknown",
             "content": content,
-            "nonce": f"{hashlib.md5(int(datetime.datetime.now().timestamp()).to_bytes(64,'big')).hexdigest()[:25]}",
+            "nonce": last.nonce + 1,
             "tts": tts,
             "flags": flags,
             **add_data

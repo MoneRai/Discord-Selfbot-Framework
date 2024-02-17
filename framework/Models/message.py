@@ -120,7 +120,7 @@ class MessagePayload:
         self.nonce: str = data.get("nonce")
         self.id: int = int(data.get("id", 0))
         if not self.nonce:
-            self.nonce: str = self.id
+            self.nonce: int = self.id
         self.mentions: list = data.get("mentions")
         self.mention_roles: list = data.get("mention_roles")
         self.mention_everyone: bool = data.get("mention_everyone")
