@@ -30,6 +30,7 @@ class Message:
         return await self.client.type(self._channel_id)
 
     async def click_button(self, button):
+        await self.payload._load_guild()
         await self.client.post(f"/interactions", {
             "application_id": self.author.id,
             "channel_id": self._channel_id,
@@ -46,20 +47,21 @@ class Message:
         })
 
     async def response_select(self, select, values: list):
+        await self.payload._load_guild()
         await self.client.post(f"/interactions", {
-            "application_id": self.author.id,
-            "channel_id": self._channel_id,
+            "application_id": str(self.author.id),
+            "channel_id": str(self._channel_id),
             "data": {
-                "component_type": 3,
+                "component_type": select.type,
                 "custom_id": select.custom_id,
-                "type": 3
+                "type": 3,
+                "values": values
             },
-            "values": values,
-            "guild_id": self._guild_id,
+            "guild_id": str(self._guild_id),
             "message_flags": 0,
-            "message_id": self.id,
-            "nonce": self.nonce,
-            "session_id": self.client.session_id,
+            "message_id": str(self.id),
+            "nonce": str(self.nonce),
+            "session_id": str(self.client.session_id),
             "type": 3
         })
 
@@ -115,24 +117,24 @@ class MessagePayload:
         self._message_reference: dict = data.get("message_reference")
         self._referenced_message: dict = data.get("referenced_message")
         self.pinned: bool = data.get("pinned")
-        if data.get("nonce"):
-            self.nonce: int = int(data.get("nonce", 0), 16)
+        self.nonce: str = data.get("nonce")
+        self.id: int = int(data.get("id", 0))
+        if not self.nonce:
+            self.nonce: str = self.id
         self.mentions: list = data.get("mentions")
         self.mention_roles: list = data.get("mention_roles")
         self.mention_everyone: bool = data.get("mention_everyone")
         if data.get("member"):
             self.member: Member = Member(self.parent.client, **data.get("member"))
-        self.id: int = int(data.get("id", 0))
         self.flags: int = int(data.get("flags", 0))
         self.embeds: list = (Embed(**d) for d in data.get("embeds"))
         self._edited_timestamp: str = data.get("edited_timestamp")
         self.content: str = data.get("content")
-        self.components: list = MessageComponent(self, **data.get("components"))
+        self.components: list = tuple(MessageComponent(self, **d) for d in data.get("components"))
         self._channel_id: int = int(data.get("channel_id", 0))
         if data.get("author"):
-            self._author = Author(self.parent.client, **data.get("author"))
+            self._author = data.get("author")
         self.attachments: list = data.get("attachments")
-        self._guild_id: int = int(data.get("guild_id", 0))
         self.reactions: list = (Reaction(**d) for d in data.get("reactions", []))
 
     @property
@@ -147,10 +149,14 @@ class MessagePayload:
         return Guild(**await self.parent.client.get_guild(self._guild_id))
 
     async def channel(self) -> Channel:
-        return Channel(**await self.parent.client.get_channel(self.channel_id))
+        return Channel(self.parent.client, **await self.parent.client.get_channel(self._channel_id))
 
+    async def _load_guild(self):
+        self._guild_id = (await self.channel()).guild_id
+
+    @property
     def author(self) -> Author:
-        return Author(self._author)
+        return Author(self.parent.client, **self._author)
 
     @property
     def edited_timestamp(self):

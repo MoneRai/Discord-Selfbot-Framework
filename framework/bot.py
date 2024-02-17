@@ -20,4 +20,4 @@ class Bot(Client):
         return User(await super().get_user(id))
 
     async def get_messages(self, channel, *, limit = 50, before: int = None) -> List[Message]:
-        return [Message(**data) for data in await super().get_messages(channel, limit = limit, before = before)]
+        return [Message(self, **data) for data in await super().get_messages(channel, limit = limit, before = before)]

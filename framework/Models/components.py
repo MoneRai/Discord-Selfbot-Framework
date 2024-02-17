@@ -1,7 +1,5 @@
-from .message import Message
-
 class MessageComponent:
-    def __new__(cls, **data):
+    def __new__(cls, _, **data):
         order = {
             1: ActionRow,
             2: Button,
@@ -12,70 +10,100 @@ class MessageComponent:
             7: MentionableSelect,
             8: ChannelSelect
         }
-        return order[data.get("type")](**data)
+        return order[data.get("type")](_, **data)
 
     def __init__(self, message, **data):
-        self.message: Message = message
+        self.message = message
         self.disabled: bool = data.get("disabled")
         self.custom_id: str = data.get("custom_id")
 
 class ActionRow:
-    def __init__(self, **data):
+    def __new__(cls, *args, **kwargs):
+        return object.__new__(cls)
+    
+    def __init__(self, message, **data):
         self.type: int = int(data.get("type", 1))
-        self.components: list = ([MessageComponent(**d) for d in data.get("components")]) if data.get("components") else []
+        self.components: list = ([MessageComponent(message, **d) for d in data.get("components")]) if data.get("components") else []
 
 class Button(MessageComponent):
-    def __init__(self, **data):
+    def __new__(cls, *args, **kwargs):
+        return object.__new__(cls)
+        
+    def __init__(self, message, **data):
+        self.message = message
         self.type: int = data.get("type", 1)
         self.style: int = int(data.get("style", 1))
         self.label: str = data.get("label")
         self.emoji: str = data.get("emoji")
         self.url: str = data.get("url")
+        self.custom_id = data.get("custom_id")
 
     async def click(self):
-        return await self.message.click_button(self)
+        return await self.message.parent.click_button(self)
 
 class SelectMenu(MessageComponent):
-    def __new__(cls, **data):
+    def __new__(cls, _, **data):
         order = {
-            1: StringSelect,
+            3: StringSelect,
             5: UserSelect,
             6: RoleSelect,
             7: MentionableSelect,
             8: ChannelSelect
         }
-        return order[data.get("type")](**data)
+        return order[data.get("type")](_, **data)
 
-    def __init__(self, **data):
+    def __init__(self, message, **data):
+        self.message = message
         self.placeholder: str = data.get("placeholder")
         self.min_values: int = int(data.get("min_values", 1))
         self.max_values: int = int(data.get("max_values", 1))
         self.options: list = (SelectOption(**d) for d in data.get("options"))
         self.default_values: list = data.get("default_values")
+        self.custom_id: str = data.get("custom_id")
 
     async def select(self, values: list):
-        return await self.message.response_select(self, values)
+        return await self.message.parent.response_select(self, values)
 
 class StringSelect(SelectMenu):
-    def __init__(self, **data):
-        super().__init__(**data)
+    def __new__(cls, *args, **kwargs):
+        return object.__new__(cls)
+    
+    def __init__(self, message, **data):
+        super().__init__(message, **data)
+        self.type: int = data.get("type", 3)
 
 class UserSelect(SelectMenu):
-    def __init__(self, **data):
-        super().__init__(**data)
+    def __new__(cls, *args, **kwargs):
+        return object.__new__(cls)
+    
+    def __init__(self, message, **data):
+        super().__init__(message, **data)
+        self.type: int = data.get("type", 5)
 
 class RoleSelect(SelectMenu):
-    def __init__(self, **data):
-        super().__init__(**data)
+    def __new__(cls, *args, **kwargs):
+        return object.__new__(cls)
+    
+    def __init__(self, message, **data):
+        super().__init__(message, **data)
+        self.type: int = data.get("type", 6)
 
 class MentionableSelect(SelectMenu):
-    def __init__(self, **data):
-        super().__init__(**data)
+    def __new__(cls, *args, **kwargs):
+        return object.__new__(cls)
+    
+    def __init__(self, message, **data):
+        super().__init__(message, **data)
+        self.type: int = data.get("type", 7)
 
 class ChannelSelect(SelectMenu):
-    def __init__(self, **data):
-        super().__init__(**data)
+    def __new__(cls, *args, **kwargs):
+        return object.__new__(cls)
+    
+    def __init__(self, message, **data):
+        super().__init__(message, **data)
         self.channel_types: list = data.get("channel_types")
+        self.type: int = data.get("type", 8)
 
 class SelectOption:
     def __init__(self, **data):
@@ -91,7 +119,10 @@ class DefaultValue:
         self.value: str = data.get("value")
 
 class TextInput:
-    def __init__(self, **data):
+    def __new__(cls, *args, **kwargs):
+        return object.__new__(cls)
+
+    def __init__(self, *_, **data):
         self.style: int = int(data.get("style", 1))
         self.label: str = data.get("label")
         self.custom_id: str = data.get("custom_id")

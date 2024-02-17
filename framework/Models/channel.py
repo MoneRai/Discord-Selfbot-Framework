@@ -13,7 +13,7 @@ class Channel:
         }
         return ident[data.get("type", 0)](client, **data)
 
-class GuildTextChannel(Channel):
+class GuildTextChannel:
     __slots__ = (
         "client",
         "id",
@@ -46,7 +46,7 @@ class GuildTextChannel(Channel):
     def guild(self):
         return Guild(**self.client.get_guild(self.guild_id))
 
-class GuildAnnouncementChannel(Channel):
+class GuildAnnouncementChannel:
     __slots__ = (
         "client",
         "id",
@@ -77,7 +77,7 @@ class GuildAnnouncementChannel(Channel):
         self.position: int = int(data.get("position", 0))
         self.default_auto_archive_duration: int = int(data.get("default_auto_archive_duration", 0))
 
-class GuildVoiceChannel(Channel):
+class GuildVoiceChannel:
     __slots__ = (
         "client",
         "id",
@@ -112,7 +112,7 @@ class GuildVoiceChannel(Channel):
         self.last_message_id: int = int(data.get("last_message_id", 0))
         self.rate_limit_per_user: int = int(data.get("rate_limit_per_user", 0))
 
-class DMChannel(Channel):
+class DMChannel:
     __slots__ = (
         "client",
         "id",
@@ -131,7 +131,7 @@ class DMChannel(Channel):
         self.type: int = int(data.get("type", 0))
         self.recipients: list = map(User(client, **d) for d in data.get("recipients"))
 
-class GroupDMChannel(Channel):
+class GroupDMChannel:
     __slots__ = (
         "client",
         "id",
@@ -177,7 +177,7 @@ class ChannelCategory:
         self.nsfw: bool = data.get("nsfw")
         self.position: int = int(data.get("position", 0))
 
-class Thread(Channel):
+class Thread:
     __slots__ = (
         "client",
         "id",
