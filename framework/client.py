@@ -91,7 +91,7 @@ class Client(Requestor):
     async def run_gateway(self):
         async with aiohttp.ClientSession(headers = {"Content-Type": "application/json", "Authorization": self.auth}) as session:
             async with session.get(f"https://discord.com/api/v9/gateway") as response:
-                d = json.loads(await response.text())
+                d = await response.json()
                 async with session.ws_connect(d['url'] + "?v=9&encoding=json") as websocket:
                     d = await websocket.receive_json()
                     await websocket.send_json({
