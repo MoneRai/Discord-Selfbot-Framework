@@ -4,4 +4,4 @@ build:
   tools:
     python: "3.10"
 sphinx:
-  configuration: docs/config.py
+  configuration: docs/conf.py
