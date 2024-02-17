@@ -44,3 +44,5 @@ async def unbelieva_blackjack(context, prefix: str, bet: int):
   # first is components row, second is row component
   await message.components[0].components[0].click()
 ```
+
+full docs on readthedocs soon (:
