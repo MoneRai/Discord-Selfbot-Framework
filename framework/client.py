@@ -1,14 +1,10 @@
 import asyncio
 import aiohttp
-import json
-import hashlib
-import datetime
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 import parsers
 from Models import Context, Message, Ready
 from commands import Command
 from client_ import Requestor
-import traceback
 
 asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
