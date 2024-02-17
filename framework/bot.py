@@ -11,13 +11,13 @@ class Bot(Client):
         asyncio.new_event_loop().run_until_complete(super().run())
 
     async def fetch_guild(self, id: int) -> Guild:
-        return Guild(await super().get_guild(id))
+        return Guild(**await super().get_guild(id))
 
     async def fetch_channel(self, id: int) -> Channel:
-        return Channel(await super().get_channel(id))
+        return Channel(**await super().get_channel(id))
 
     async def fetch_user(self, id: int) -> User:
-        return User(await super().get_user(id))
+        return User(**await super().get_user(id))
 
     async def get_messages(self, channel, *, limit = 50, before: int = None) -> List[Message]:
         return [Message(self, **data) for data in await super().get_messages(channel, limit = limit, before = before)]
