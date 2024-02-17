@@ -4,7 +4,6 @@ import json
 import hashlib
 import datetime
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from events import *
 import parsers
 from Models import Context, Message, Ready
 from commands import Command
