@@ -9,6 +9,10 @@ class User:
     def send(self, *args, **kwargs):
         return self.client.message(self.id, *args, **kwargs)
 
+    @property
+    def mention(self):
+        return f"<@{self.id}>"
+
 class UserPayload:
     __slots__ = (
         "id",

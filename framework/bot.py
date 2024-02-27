@@ -8,7 +8,7 @@ class Bot(Client):
         super().__init__(token, *args, **kwargs)
 
     def run(self):
-        asyncio.new_event_loop().run_until_complete(super().run())
+        self.loop.run_until_complete(super().run())
 
     async def fetch_guild(self, id: int) -> Guild:
         return Guild(**await super().get_guild(id))
@@ -19,5 +19,25 @@ class Bot(Client):
     async def fetch_user(self, id: int) -> User:
         return User(**await super().get_user(id))
 
-    async def get_messages(self, channel, *, limit = 50, before: int = None) -> List[Message]:
-        return [Message(self, **data) for data in await super().get_messages(channel, limit = limit, before = before)]
+    async def get_messages(self, channel, *, limit = 50, before: int = None, check = None) -> List[Message]:
+        return [Message(self, **data) for data in await super().get_messages(channel, limit = limit, before = before, check = check)]
+    
+    async def get_message(self, channel, *, limit = 1000, before: int = None, check = None) -> Message:
+        if not check:
+            return await self.get_messages(channel)[0]
+        else:
+            for _ in range(limit // 50):
+                messages = await self.get_messages(channel, before = before)
+                for message in messages:
+                    if check(message):
+                        return message
+                    before = message.id
+
+    async def get_messages_per(self, channel, *, limit: int = 1000, before: int = None, per: int = 50, check = None) -> list:
+        result = []
+
+        for _ in range(limit // per):
+            messages = await self.get_messages(channel, limit = per, before = before, check = check)
+            before = messages[-1].id
+            result.extend(messages)
+        return result

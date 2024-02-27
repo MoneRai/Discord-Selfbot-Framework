@@ -104,11 +104,13 @@ class MessagePayload:
         "_author", 
         "attachments", 
         "_guild_id",
-        "reactions"
+        "reactions",
+        "data"
     )
     
     def __init__(self, parent, **data):
         self.parent: Message = parent
+        self.data = data
 
         self.type: int = int(data.get("type", 0))
         self.tts: bool = data.get("tts")
@@ -132,10 +134,20 @@ class MessagePayload:
         self.content: str = data.get("content")
         self.components: list = tuple(MessageComponent(self, **d) for d in data.get("components"))
         self._channel_id: int = int(data.get("channel_id", 0))
+        self._guild_id: int = int(data.get("guild_id", 0))
         if data.get("author"):
             self._author = data.get("author")
         self.attachments: list = data.get("attachments")
         self.reactions: list = (Reaction(**d) for d in data.get("reactions", []))
+
+    def to_json(self):
+        result = {}
+        for key in self.__slots__:
+            try:
+                result[key] = getattr(self, key)
+            except:
+                pass
+        return result
 
     @property
     def referenced_message(self) -> Message:

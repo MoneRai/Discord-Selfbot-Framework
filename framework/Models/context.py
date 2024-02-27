@@ -19,8 +19,9 @@ class Context:
     async def channel(self) -> Channel:
         return await self.message.channel()
     
-    async def author(self) -> Author:
-        return await self.message.author()
+    @property
+    def author(self) -> Author:
+        return self.message.author
 
     async def reply(self, *args, **kwargs) -> Message:
         return await self.message.reply(*args, **kwargs)

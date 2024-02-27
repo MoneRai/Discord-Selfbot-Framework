@@ -35,7 +35,8 @@ class GuildTextChannel:
         self.guild_id: int = int(data.get("guild_id", 0))
         self.type: int = int(data.get("type", 0))
         self.name: str = data.get("name")
-        self.parent_id: int = int(data.get("parent_id", 0))
+        if data.get("parent_id", 0):
+            self.parent_id: int = int(data.get("parent_id", 0))
         self.last_message_id: int = int(data.get("last_message_id", 0))
         self.permission_overwrites: list = data.get("permission_overwrites")
         self.topic: str = data.get("topic")
@@ -69,7 +70,8 @@ class GuildAnnouncementChannel:
         self.guild_id: int = int(data.get("guild_id", 0))
         self.type: int = int(data.get("type", 0))
         self.name: str = data.get("name")
-        self.parent_id: int = int(data.get("parent_id", 0))
+        if data.get("parent_id", 0):
+            self.parent_id: int = int(data.get("parent_id", 0))
         self.last_message_id: int = int(data.get("last_message_id", 0))
         self.permission_overwrites: list = data.get("permission_overwrites")
         self.topic: str = data.get("topic")
@@ -102,7 +104,8 @@ class GuildVoiceChannel:
         self.guild_id: int = int(data.get("guild_id", 0))
         self.type: int = int(data.get("type", 0))
         self.name: str = data.get("name")
-        self.parent_id: int = int(data.get("parent_id", 0))
+        if data.get("parent_id", 0):
+            self.parent_id: int = int(data.get("parent_id", 0))
         self.permission_overwrites: list = data.get("permission_overwrites")
         self.nsfw: bool = data.get("nsfw")
         self.position: int = int(data.get("position", 0))
@@ -172,7 +175,8 @@ class ChannelCategory:
         self.guild_id: int = int(data.get("guild_id", 0))
         self.type: int = int(data.get("type", 0))
         self.name: str = data.get("name")
-        self.parent_id: int = int(data.get("parent_id", 0))
+        if data.get("parent_id", 0):
+            self.parent_id: int = int(data.get("parent_id", 0))
         self.permission_overwrites: list = data.get("permission_overwrites")
         self.nsfw: bool = data.get("nsfw")
         self.position: int = int(data.get("position", 0))
@@ -199,7 +203,8 @@ class Thread:
 
         self.id: int = int(data.get("id", 0))
         self.guild_id: int = int(data.get("guild_id", 0))
-        self.parent_id: int = int(data.get("parent_id", 0))
+        if data.get("parent_id", 0):
+            self.parent_id: int = int(data.get("parent_id", 0))
         self.owner_id: int = int(data.get("owner_id", 0))
         self.name: str = data.get("name")
         self.type: int = int(data.get("type", 0))
