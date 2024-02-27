@@ -132,7 +132,7 @@ class MessagePayload:
         self.embeds: list = (Embed(**d) for d in data.get("embeds"))
         self._edited_timestamp: str = data.get("edited_timestamp")
         self.content: str = data.get("content")
-        self.components: list = tuple(MessageComponent(self, **d) for d in data.get("components"))
+        self.rows: list = tuple(MessageComponent(self, **d) for d in data.get("components"))
         self._channel_id: int = int(data.get("channel_id", 0))
         self._guild_id: int = int(data.get("guild_id", 0))
         if data.get("author"):
