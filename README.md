@@ -1,5 +1,6 @@
 # Discord-Selfbot-Framework
-A simple discord framework for managing regular accounts via gateway and http api
+A simple discord framework for managing regular accounts via gateway and HTTP API.
+
 Using this, you can manage gateway events, process commands, using discord message components and etc.
 For example, this is simple snippet of code, that provides simple framework usage
 ```python
