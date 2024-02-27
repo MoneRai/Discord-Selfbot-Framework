@@ -8,7 +8,7 @@ def parse_args(string: str, coro):
             if param[1].annotation != _empty and param[1].annotation:
                 args.append(param[1].annotation().__class__(elem))
             elif param[1].kind == _ParameterKind.VAR_POSITIONAL:
-                args.append(string.split()[i:])
+                args.extend(string.split()[i:])
                 pos = True
             else:
                 args.append(elem)

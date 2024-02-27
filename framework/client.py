@@ -7,7 +7,6 @@ from commands import Command
 from client_ import Requestor
 from events import Event
 from cache import Cache
-import datetime
 
 asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
@@ -42,9 +41,8 @@ class Client(Requestor):
 
         @self.event("MESSAGE_CREATE")
         async def _(message):
-            if message:
-                self._message_cache.put("MESSAGES", message)
-                await self.process_commands(message)
+            self._message_cache.put("MESSAGES", message)
+            self.loop.create_task(self.process_commands(message))
         self.started = True
 
     async def message(self, channel, content, *, tts = False, flags = 0, add_data = {}):
@@ -65,7 +63,7 @@ class Client(Requestor):
 
     async def get_message(self, channel, *, limit = 1000, before: int = None, check = None) -> dict:
         if not check:
-            return await self.get_messages(channel)[0]
+            return (await self.get_messages(channel))[0]
         else:
             for _ in range(limit // 50):
                 messages = await self.get_messages(channel, before = before)
@@ -120,7 +118,7 @@ class Client(Requestor):
     async def process_commands(self, message: Message):
         for key, callback in self.commands.items():
             if message.content.startswith(f"{self.prefix}{key}"):
-                await callback(Context(self, message), *parsers.parse_args(message.content.lstrip(f"{self.prefix}{key}"), callback.original))
+                self.loop.create_task(callback(Context(self, message), *parsers.parse_args(message.content.lstrip(f"{self.prefix}{key}"), callback.original)))
 
     def event(self, name: str):
         def wrapped(coro):
@@ -176,15 +174,15 @@ class Client(Requestor):
                     while True:
                         yield await websocket.receive_json()
 
-    async def wait_for(self, event: str, check = lambda element: True, timeout = None):         
+    async def wait_for(self, event: str, check = lambda element: True, timeout = None):    
         future = self.loop.create_future()
         try:
             listeners = self.gateway_listeners[event]
         except:
             listeners = []
-            self.gateway_listeners[event] = listeners
         
         listeners.append((future, check))
+        self.gateway_listeners[event] = listeners
         return await asyncio.wait_for(future, timeout)
 
     async def type(self, channel: int):

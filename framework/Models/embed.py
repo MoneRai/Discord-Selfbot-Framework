@@ -8,13 +8,13 @@ class Embed:
         self.color: int = int(data.get("color", 0))
         if data.get("timestamp"):
             self.timestamp: datetime.datetime = datetime.datetime.fromisoformat(data.get("timestamp"))
-        self.footer: EmbedFooter = EmbedFooter(**data.get("footer"))
-        self.image: EmbedImage = EmbedImage(**data.get("image"))
-        self.thumbnail: EmbedThumbnail = EmbedThumbnail(**data.get("thumbnail"))
-        self.video: EmbedVideo = EmbedVideo(**data.get("video"))
-        self.provider: EmbedProvider = EmbedProvider(data.get("provider"))
-        self.author: EmbedAuthor = EmbedAuthor(**data.get("author"))
-        self.fields: list = (EmbedField(**d) for d in data.get("fields"))
+        self.footer: EmbedFooter = EmbedFooter(**data.get("footer", {}))
+        self.image: EmbedImage = EmbedImage(**data.get("image", {}))
+        self.thumbnail: EmbedThumbnail = EmbedThumbnail(**data.get("thumbnail", {}))
+        self.video: EmbedVideo = EmbedVideo(**data.get("video", {}))
+        self.provider: EmbedProvider = EmbedProvider(**data.get("provider", {}))
+        self.author: EmbedAuthor = EmbedAuthor(**data.get("author", {}))
+        self.fields: list = tuple(EmbedField(**d) for d in data.get("fields", ()))
         self.type: str = data.get("type")
 
 class EmbedThumbnail:

@@ -24,7 +24,7 @@ class Bot(Client):
     
     async def get_message(self, channel, *, limit = 1000, before: int = None, check = None) -> Message:
         if not check:
-            return await self.get_messages(channel)[0]
+            return (await self.get_messages(channel))[0]
         else:
             for _ in range(limit // 50):
                 messages = await self.get_messages(channel, before = before)

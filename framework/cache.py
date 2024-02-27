@@ -14,4 +14,4 @@ class Cache:
                 self.cache[key].append(value)
 
     def get(self, key):
-        return self.cache.get(key)
+        return self.cache.get(key, [])
