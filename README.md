@@ -38,8 +38,8 @@ async def react_me(context, emoji: str):
 @bot.command("unbelieva_blackjack")
 async def unbelieva_blackjack(context, prefix: str, bet: int):
   await context.send(f"{prefix}bj {bet}")
-  # example of getting bot message (event waiting will be added in future)
-  message = await bot.get_messages((await context.channel()).id, limit = 1)[0]
+  # example of waiting for event
+  message = await bot.wait_for("MESSAGE_CREATE", check = lambda m: m.author.id == ...)
   # click "hit" button
   # first is components row, second is row component
   await message.components[0].components[0].click()
