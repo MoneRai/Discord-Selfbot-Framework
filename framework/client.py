@@ -61,6 +61,9 @@ class Client(Requestor):
     async def edit_message(self, channel, id, content) -> dict:
         return await self.patch(f"/channels/{channel}/messages/{id}", {"content": content})
 
+    async def get_slash_commands_config(self, guild: int):
+        return await self.get(f"/guilds/{guild}/application-command-index")
+
     async def get_message(self, channel, *, limit = 1000, before: int = None, check = None) -> dict:
         if not check:
             return (await self.get_messages(channel))[0]
