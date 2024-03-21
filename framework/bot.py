@@ -2,7 +2,7 @@ from client import Client
 import asyncio
 from Models import *
 from typing import List
-from Models.slash_command import SlashCommand
+from Models.slash_command import SlashCommand, SlashCommandGroup
 
 class Bot(Client):
     def __init__(self, token: str, *args, **kwargs):
@@ -46,6 +46,10 @@ class Bot(Client):
     async def get_slash_command(self, guild, name):
         for command in (await self.get_slash_commands_config(guild))["application_commands"]:
             if command["name"] == name:
-                return SlashCommand(self, **command)
+                if command["options"]:
+                    if command["options"][0]["type"] == 1:
+                        return SlashCommandGroup(self, **command)
+                    else:
+                        return SlashCommand(self, **command)
         else:
             raise KeyError(("Slash command with that name not found"))
