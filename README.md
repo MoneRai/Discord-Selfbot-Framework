@@ -58,7 +58,7 @@ single slash commands usage
 async def slash(context):
   await context.send_slash_command("cat")
 ```
-where empty tuple is slash command options. Slash command with options usage:
+slash command with options usage:
 ```python
 @bot.command("slash")
 async def slash(context):
