@@ -65,4 +65,4 @@ async def slash(context):
   await context.send_slash_command("cat", (("url", "https://..."), ("number": 4)))
 ```
 
-full docs on readthedocs is soon (no more than 100 years)
+full docs on readthedocs soon (no more than 100 years)
