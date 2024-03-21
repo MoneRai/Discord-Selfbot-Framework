@@ -3,12 +3,12 @@
   <a href = "https://www.python.org/downloads/release/python-31011/"><img src = "https://img.shields.io/badge/python-3.10-red.svg?logo=python"></a>
   <a href = ""><img src = "https://img.shields.io/badge/pypi-none-red?logo=pypi"></a>
   <a href = ""><img src = "https://img.shields.io/badge/readthedocs-none-red?logo=readthedocs"></a>
-  <a href = "https://github.com/MoneRai/Discord-Selfbot-Framework/releases/tag/Beta"><img src = "https://img.shields.io/badge/release-1.0-red?logo=github"></a>
+  <a href = "https://github.com/MoneRai/Discord-Selfbot-Framework/releases/tag/Beta"><img src = "https://img.shields.io/badge/release-none-red?logo=github"></a>
 </div>
 
 A simple discord framework for managing regular accounts via gateway and HTTP API.
 
-Using this, you can manage gateway events, process commands, use discord message components and etc.
+Using this, you can manage gateway events, process commands, use discord message components, slash commands and etc.
 For example, this is simple snippet of code, that provides simple framework usage
 ```python
 from bot import Bot
