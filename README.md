@@ -52,4 +52,17 @@ async def unbelieva_blackjack(context, prefix: str, bet: int):
   await message.rows[0].components[0].click()
 ```
 
-full docs on readthedocs soon (:
+single (non-group, i'm too lazy to do slash command groups) slash commands usage 
+```python
+@bot.command("slash")
+async def slash(context):
+  await context.send_slash_command("cat", ())
+```
+where empty tuple is slash command options. Slash command with options usage:
+```python
+@bot.command("slash")
+async def slash(context):
+  await context.send_slash_command("cat", (("url", "https://..."), ("number": 4)))
+```
+
+full docs on readthedocs is soon (no more than 100 years)

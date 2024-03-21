@@ -29,6 +29,10 @@ class Context:
     async def send(self, *args, **kwargs) -> Message:
         return await self.message.send(*args, **kwargs)
 
+    async def send_slash_command(self, name, options):
+        command = await self.client.get_slash_command(self.message._guild_id, name)
+        return await command.send(self.message._guild_id, self.message._channel_id, options)
+
     async def type(self):
         await self.message.type()
 
