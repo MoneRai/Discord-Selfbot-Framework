@@ -51,5 +51,7 @@ class Bot(Client):
                         return SlashCommandGroup(self, **command)
                     else:
                         return SlashCommand(self, **command)
+                else:
+                    return SlashCommand(self, **command)
         else:
             raise KeyError(("Slash command with that name not found"))
