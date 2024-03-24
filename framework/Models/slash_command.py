@@ -53,9 +53,7 @@ class SlashCommand:
             "analytics_location": "slash_ui"
         })
         data = json.dumps(data, ensure_ascii = False).replace('\\', '')[1:-1]
-        print(data)
         data = await self.client.post("/interactions", f"--0\nContent-Disposition: form-data; name=\"payload_json\"\n\n{data}\n--0--", content_type = "multipart/form-data; boundary=0")
-        print(data)
 
 class SlashCommandGroup(SlashCommand):
     def __init__(self, client, **data):
