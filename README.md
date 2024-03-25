@@ -19,7 +19,6 @@ bot = Bot("TOKEN", "COMMAND_PREFIX")
 @bot.event("MESSAGE_CREATE")
 async def on_message(message: Message):
   ...
-  await bot.process_commands(message)
 
 @bot.command("ping")
 async def ping(context: Context):
@@ -41,7 +40,7 @@ adding reactions and using message components (buttons, lists) are supported too
 ```python
 @bot.command("react_me")
 async def react_me(context, emoji: str):
-  await context.add_reaction(f"{emoji}")
+  await context.add_reaction(emoji)
 
 @bot.command("unbelieva_blackjack")
 async def unbelieva_blackjack(context, prefix: str, bet: int):
