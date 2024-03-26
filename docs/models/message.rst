@@ -3,4 +3,4 @@ Messages
 Message
 ~~~~~~~
 .. attributetable:: Message
-.. autoclass:: Client
+.. autoclass:: Message
