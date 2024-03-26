@@ -12,3 +12,5 @@ extlinks = {
 source_suffix = '.rst'
 project = 'Discord-Selfbot-Framework'
 version = '1.0.0'
+pygments_style = 'friendly'
+html_theme = 'basic'
