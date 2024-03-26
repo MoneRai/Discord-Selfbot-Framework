@@ -6,7 +6,7 @@ intersphinx_mapping = {
 }
 
 extlinks = {
-    'issue': ('https://github.com/MoneRai/Discord-Selfbot-Framework/issues/%s', 'GH-%s')
+    'issue': ('https://github.com/MoneRai/Discord-Selfbot-Framework/issues')
 }
 
 source_suffix = '.rst'
