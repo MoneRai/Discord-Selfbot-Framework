@@ -46,7 +46,7 @@ class Bot(Client):
     async def get_slash_command(self, guild, name):
         for command in (await self.get_slash_commands_config(guild))["application_commands"]:
             if command["name"] == name:
-                if command["options"]:
+                if command.get("options", []):
                     if command["options"][0]["type"] == 1:
                         return SlashCommandGroup(self, **command)
                     else:
