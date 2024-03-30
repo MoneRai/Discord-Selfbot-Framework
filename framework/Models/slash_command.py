@@ -27,15 +27,15 @@ class SlashCommand:
         self.description_localized: str = data.get("description_localized")
         self.name_localized: str = data.get("name_localized")
 
-    def _load_options(self, options: tuple):
+    def _load_options(self, options: dict):
         result = []
-        for name, value in options:
+        for name, value in options.items():
             for curopt in self.options:
                 if name == curopt.name:
-                    result.append({"type": curopt.type, "name": curopt.name, "value": value})
+                    result.append({"type": curopt.type, "name": curopt.name, "value": str(value)})
         return result
 
-    async def send(self, guild: int, channel: int, options: list = (), attachments: list = ()):
+    async def send(self, guild: int, channel: int, options: dict = (), attachments: list = ()):
         data = json.dumps({
             "type": 2,
             "application_id": str(self.application_id),
@@ -71,7 +71,7 @@ class SlashCommandGroup(SlashCommand):
         self.description_localized: str = data.get("description_localized")
         self.name_localized: str = data.get("name_localized")
 
-    async def send(self, name: str, guild: int, channel: int, options: list = (), attachments: list = ()):
+    async def send(self, name: str, guild: int, channel: int, options: dict = (), attachments: list = ()):
         for command in self.options:
             if command.name == name:
                 break
