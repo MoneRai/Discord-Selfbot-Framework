@@ -61,7 +61,7 @@ slash command with options usage:
 ```python
 @bot.command("slash")
 async def slash(context):
-  await context.send_slash_command("cat", options = (("url", "https://..."), ("number", 4)))
+  await context.send_slash_command("cat", options = {"url": "https://...", "number": 4})
 ```
 
 group slash commands usage
@@ -74,7 +74,7 @@ group slash command with options:
 ```python
 @bot.command("slash")
 async def slash(context):
-  await context.send_slash_command("animals", "cat", options = (("url", "https://..."), ("number", 4)))
+  await context.send_slash_command("animals", "cat", options = {"url": "https://...", "number": 4})
 ```
 
 full docs on readthedocs soon (no more than 100 years)
